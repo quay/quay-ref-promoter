@@ -2,6 +2,8 @@
 
 An interactive bash script to assist with promoting git refs to production namespaces in app-interface for Quay.io services.
 
+![Recording of the application](./demo.gif)
+
 ## Overview
 
 This tool simplifies the process of updating git references (branches, tags, commits) across multiple deployments in app-interface SAAS files. It provides an interactive terminal UI to select repositories, view active deployments, and update refs across one or many namespaces simultaneously.
@@ -70,7 +72,3 @@ app-interface/
 │           └── saas/
 │               └── *.yaml
 ```
-
-## Example
-
-![Recording of the application](./demo.gif)
