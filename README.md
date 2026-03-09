@@ -31,7 +31,7 @@ This tool simplifies the process of updating git references (branches, tags, com
 
 - **gum** - Terminal UI toolkit ([installation guide](https://github.com/charmbracelet/gum#installation))
 - **yq** - YAML processor ([installation guide](https://github.com/mikefarah/yq#install))
-- **bash** - Bash shell (comes standard on Linux/macOS)
+- **bash 4+** - Bash shell (comes standard on Linux; macOS ships with Bash 3.x which is not supported — install a newer version via `brew install bash`)
 
 ### Basic Usage
 
