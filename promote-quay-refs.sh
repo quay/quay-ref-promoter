@@ -110,6 +110,7 @@ gum style --foreground 105 "Scanning for repositories and deployments..."
 declare -A DEPLOYMENT_MAP
 declare -a REPO_LIST=()
 declare -A REPO_COUNT=()
+declare -a AUTO_PROMOTED_TARGETS=()
 
 for SAAS_DIR in "${SAAS_DIRS[@]}"; do
     while IFS= read -r SAAS_FILE; do
@@ -135,6 +136,13 @@ for SAAS_DIR in "${SAAS_DIRS[@]}"; do
                 REF=$(yq eval ".resourceTemplates[$TEMPLATE_INDEX].targets[$i].ref" "$SAAS_FILE" 2>/dev/null || echo "")
                 DISABLE=$(yq eval ".resourceTemplates[$TEMPLATE_INDEX].targets[$i].disable" "$SAAS_FILE" 2>/dev/null || echo "false")
                 DELETE=$(yq eval ".resourceTemplates[$TEMPLATE_INDEX].targets[$i].delete" "$SAAS_FILE" 2>/dev/null || echo "false")
+                PROMOTION_AUTO=$(yq eval ".resourceTemplates[$TEMPLATE_INDEX].targets[$i].promotion.auto" "$SAAS_FILE" 2>/dev/null || echo "false")
+
+                if [ "$PROMOTION_AUTO" = "true" ]; then
+                    NS_CLEAN=$(echo "$NS_REF" | sed 's|^/||')
+                    AUTO_PROMOTED_TARGETS+=("$(basename "$SAAS_FILE") → $TEMPLATE_NAME → $NS_CLEAN")
+                    continue
+                fi
 
                 if [ -n "$NS_REF" ] && [ "$NS_REF" != "null" ] && [ -n "$REF" ] && [ "$REF" != "null" ] && [ "$DISABLE" != "true" ] && [ "$DELETE" != "true" ] && [ "$REF" != "main" ] && [ "$REF" != "master" ]; then
                     NS_CLEAN=$(echo "$NS_REF" | sed 's|^/||')
@@ -154,8 +162,16 @@ for SAAS_DIR in "${SAAS_DIRS[@]}"; do
     done < <(find "$SAAS_DIR" -name "*.yaml" -o -name "*.yml")
 done
 
+if [ ${#AUTO_PROMOTED_TARGETS[@]} -gt 0 ]; then
+    echo ""
+    gum style --foreground 226 "Skipped ${#AUTO_PROMOTED_TARGETS[@]} auto-promoted target(s) (promotion.auto: true):"
+    for AUTO_TARGET in "${AUTO_PROMOTED_TARGETS[@]}"; do
+        gum style --foreground 240 "  • $AUTO_TARGET"
+    done
+fi
+
 if [ ${#REPO_LIST[@]} -eq 0 ]; then
-    gum style --foreground 196 "No active deployments found (all are pinned to main/master or disabled)!"
+    gum style --foreground 196 "No active deployments found (all are pinned to main/master, disabled, or auto-promoted)!"
     exit 1
 fi
 
